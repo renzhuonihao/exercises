@@ -1,0 +1,12 @@
+(define (average x y) (/ (+ x y) 2))
+(define tolerance 0.00001)
+(define (fixed-point f first-guess)
+  (define (close-enough? v1 v2)
+    (< (abs (- v1 v2)) tolerance))
+  (define (try guess)
+    (let ((next (f guess)))
+      (cond ((close-enough? guess next) next)
+            (else ((display guess) (newline) (try next)))))) ;有bug，好奇怪啊,真是诡异
+  (try first-guess))
+(define (run-test)
+  (fixed-point (lambda (x) (/ (log 1000) (log x))) 4.5))

@@ -1,0 +1,484 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>练习 1.22 &mdash; SICP 解题集</title>
+<!-- RTD <head> -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "sicp";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="SICP 解题集" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>练习 1.22<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>要写出 <tt class="docutils literal"><span class="pre">search-for-primes</span></tt> 函数，我们首先需要解决以下几个子问题：</p>
+<ol class="arabic simple">
+<li>写一个能产生下一个奇数的函数，用于生成连续奇数</li>
+<li>写一个检查给定数字是否为素数的函数</li>
+<li>写一个函数，给定它一个参数 <tt class="docutils literal"><span class="pre">n</span></tt> ，可以生成大于等于 <tt class="docutils literal"><span class="pre">n</span></tt> 的三个素数，或者更一般地，对于一个函数，给定它两个参数 <tt class="docutils literal"><span class="pre">n</span></tt> 和 <tt class="docutils literal"><span class="pre">count</span></tt> ，可以生成 <tt class="docutils literal"><span class="pre">count</span></tt> 个大于等于 <tt class="docutils literal"><span class="pre">n</span></tt> 的素数</li>
+<li>测量寻找三个素数所需的时间</li>
+</ol>
+<div class="section" id="id2">
+<h2>生成奇数的函数<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>首先来解决问题一，函数 <tt class="docutils literal"><span class="pre">next-odd</span></tt> 接受一个参数 <tt class="docutils literal"><span class="pre">n</span></tt> ，生成跟随在 <tt class="docutils literal"><span class="pre">n</span></tt> 之后的第一个奇数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 22-next-odd.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">next-odd</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">if </span><span class="p">(</span><span class="nb">odd? </span><span class="nv">n</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">+ </span><span class="mi">2</span> <span class="nv">n</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">+ </span><span class="mi">1</span> <span class="nv">n</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>测试 <tt class="docutils literal"><span class="pre">next-odd</span></tt> ，确保它满足了我们的需求：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;22-next-odd.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;22-next-odd.scm&quot;... done</span>
+<span class="c1">;Value: next-odd</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">next-odd</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1">;Value: 3</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">next-odd</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="c1">;Value: 5</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>检测素数的函数<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>至于第二个问题，检测给定数是否为素数的函数，可以直接重用书本 33 页的 <tt class="docutils literal"><span class="pre">prime?</span></tt> 函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; p33-prime.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p33-smallest-divisor.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">prime?</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">= </span><span class="nv">n</span> <span class="p">(</span><span class="nf">smallest-divisor</span> <span class="nv">n</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; p33-smallest-divisor.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p33-divides.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p33-find-divisor.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">smallest-divisor</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">find-divisor</span> <span class="nv">n</span> <span class="mi">2</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; p33-find-divisor.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">find-divisor</span> <span class="nv">n</span> <span class="nv">test-divisor</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">cond </span><span class="p">((</span><span class="nb">&gt; </span><span class="p">(</span><span class="nf">square</span> <span class="nv">test-divisor</span><span class="p">)</span> <span class="nv">n</span><span class="p">)</span>
+            <span class="nv">n</span><span class="p">)</span>
+          <span class="p">((</span><span class="nf">divides?</span> <span class="nv">test-divisor</span> <span class="nv">n</span><span class="p">)</span>
+            <span class="nv">test-divisor</span><span class="p">)</span>
+          <span class="p">(</span><span class="nf">else</span>
+            <span class="p">(</span><span class="nf">find-divisor</span> <span class="nv">n</span> <span class="p">(</span><span class="nb">+ </span><span class="nv">test-divisor</span> <span class="mi">1</span><span class="p">)))))</span>
+</pre></div>
+</div>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; p33-divides.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">divides?</span> <span class="nv">a</span> <span class="nv">b</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">= </span><span class="p">(</span><span class="nb">remainder </span><span class="nv">b</span> <span class="nv">a</span><span class="p">)</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;p33-prime.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;p33-prime.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p33-smallest-divisor.scm&quot;...</span>
+<span class="c1">;    Loading &quot;p33-divides.scm&quot;... done</span>
+<span class="c1">;    Loading &quot;p33-find-divisor.scm&quot;... done</span>
+<span class="c1">;  ... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: prime?</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">prime?</span> <span class="mi">7</span><span class="p">)</span>
+
+<span class="c1">;Value: #t</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">prime?</span> <span class="mi">8</span><span class="p">)</span>
+
+<span class="c1">;Value: #f</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>生成连续素数的函数<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>有了前面两个函数的支持，写出生成连续素数的函数就很直观了：首先使用 <tt class="docutils literal"><span class="pre">next-odd</span></tt> 生成一个奇数，然后使用 <tt class="docutils literal"><span class="pre">prime?</span></tt> 检查给定的奇数是否素数，一直这样计算下去，直到满足参数 <tt class="docutils literal"><span class="pre">count</span></tt> 指定的数量为止。</p>
+<p>以下是 <tt class="docutils literal"><span class="pre">continue-primes</span></tt> 的定义：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 22-continue-primes.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p33-prime.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;22-next-odd.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">continue-primes</span> <span class="nv">n</span> <span class="nv">count</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">cond </span><span class="p">((</span><span class="nb">= </span><span class="nv">count</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">display </span><span class="s">&quot;are primes.&quot;</span><span class="p">))</span>
+          <span class="p">((</span><span class="nf">prime?</span> <span class="nv">n</span><span class="p">)</span>
+            <span class="p">(</span><span class="nb">display </span><span class="nv">n</span><span class="p">)</span>
+            <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+            <span class="p">(</span><span class="nf">continue-primes</span> <span class="p">(</span><span class="nf">next-odd</span> <span class="nv">n</span><span class="p">)</span> <span class="p">(</span><span class="nb">- </span><span class="nv">count</span> <span class="mi">1</span><span class="p">)))</span>
+          <span class="p">(</span><span class="nf">else</span>
+            <span class="p">(</span><span class="nf">continue-primes</span> <span class="p">(</span><span class="nf">next-odd</span> <span class="nv">n</span><span class="p">)</span> <span class="nv">count</span><span class="p">))))</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">continue-primes</span></tt> 函数会逐个逐个地打印出它找到的素数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;22-continue-primes.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;22-continue-primes.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p33-prime.scm&quot;...</span>
+<span class="c1">;    Loading &quot;p33-smallest-divisor.scm&quot;...</span>
+<span class="c1">;      Loading &quot;p33-divides.scm&quot;... done</span>
+<span class="c1">;      Loading &quot;p33-find-divisor.scm&quot;... done</span>
+<span class="c1">;    ... done</span>
+<span class="c1">;  ... done</span>
+<span class="c1">;  Loading &quot;22-next-odd.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: continue-primes</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">continue-primes</span> <span class="mi">1000</span> <span class="mi">3</span><span class="p">)</span>
+<span class="mi">1009</span>
+<span class="mi">1013</span>
+<span class="mi">1019</span>
+<span class="nv">are</span> <span class="nv">primes</span><span class="o">.</span>
+<span class="c1">;Unspecified return value</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">continue-primes</span> <span class="mi">1000</span> <span class="mi">10</span><span class="p">)</span>
+<span class="mi">1009</span>
+<span class="mi">1013</span>
+<span class="mi">1019</span>
+<span class="mi">1021</span>
+<span class="mi">1031</span>
+<span class="mi">1033</span>
+<span class="mi">1039</span>
+<span class="mi">1049</span>
+<span class="mi">1051</span>
+<span class="mi">1061</span>
+<span class="nv">are</span> <span class="nv">primes</span><span class="o">.</span>
+<span class="c1">;Unspecified return value</span>
+</pre></div>
+</div>
+<p>以上分别是大于等于 <tt class="docutils literal"><span class="pre">1000</span></tt> 的前三个素数，以及大于等于 <tt class="docutils literal"><span class="pre">1000</span></tt> 的前十个素数。</p>
+</div>
+<div class="section" id="id5">
+<h2>测量运行时间<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>在新版的 MIT Scheme 中， <tt class="docutils literal"><span class="pre">runtime</span></tt> 的返回结果已经不再是按微秒计算，而是按秒计算，这种格式对于我们要测量的程序来说太大了，为此，这里使用 <a class="reference external" href="http://www.gnu.org/software/MITScheme/documentation/MITScheme-ref/Machine-Time.html#Machine-Time">real-time-clock</a> 代替 <tt class="docutils literal"><span class="pre">runtime</span></tt> ，作为计时函数。</p>
+<p><tt class="docutils literal"><span class="pre">real-time-clock</span></tt> 以 ticks 为单位，返回 MIT Scheme 从开始到调用 <tt class="docutils literal"><span class="pre">real-time-clock</span></tt> 时所经过的时间，其中每个 ticks 为一毫秒：</p>
+<div class="last highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">real-time-clock</span><span class="p">)</span>
+
+<span class="c1">;Value: 624880</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">real-time-clock</span><span class="p">)</span>
+
+<span class="c1">;Value: 628007</span>
+</pre></div>
+</div>
+</div>
+<p>要测量一个表达式的运行时间，我们可以在要测量的表达式的之前和之后分别添加一个 <tt class="docutils literal"><span class="pre">real-time-clock</span></tt> 函数，然后运行程序，两个 <tt class="docutils literal"><span class="pre">real-time-clock</span></tt> 之间的数值之差就是运行给定表达式所需的时间。</p>
+<p>比如说，要测量函数 <tt class="docutils literal"><span class="pre">foo</span></tt> 的运行时间，可以执行以下函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">test-foo</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">start-time</span> <span class="p">(</span><span class="nf">real-time-clock</span><span class="p">)))</span>
+        <span class="p">(</span><span class="nf">foo</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">real-time-clock</span><span class="p">)</span> <span class="nv">start-time</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p><tt class="docutils literal"><span class="pre">(test-foo)</span></tt> 调用的返回值就是 <tt class="docutils literal"><span class="pre">(foo)</span></tt> 运行所需的时间（以毫秒计算）。</p>
+</div>
+<div class="section" id="search-for-primes">
+<h2>search-for-primes<a class="headerlink" href="#search-for-primes" title="Permalink to this headline">¶</a></h2>
+<p>现在，我们可以组合起前面的 <tt class="docutils literal"><span class="pre">continue-primes</span></tt> 函数和 <tt class="docutils literal"><span class="pre">real-time-clock</span></tt> 函数，写出题目要求的 <tt class="docutils literal"><span class="pre">search-for-primes</span></tt> 函数了，这个函数接受参数 <tt class="docutils literal"><span class="pre">n</span></tt> ，找出大于等于 <tt class="docutils literal"><span class="pre">n</span></tt> 的三个素数，并且返回寻找素数所需的时间作为函数的返回值：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 22-search-for-primes.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;22-continue-primes.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">search-for-primes</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">start-time</span> <span class="p">(</span><span class="nf">real-time-clock</span><span class="p">)))</span>
+        <span class="p">(</span><span class="nf">continue-primes</span> <span class="nv">n</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">real-time-clock</span><span class="p">)</span> <span class="nv">start-time</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>现在可以使用 <tt class="docutils literal"><span class="pre">search-for-primes</span></tt> 来完成题目指定的寻找素数的任务了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;22-search-for-primes.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;22-search-for-primes.scm&quot;...</span>
+<span class="c1">;  Loading &quot;22-continue-primes.scm&quot;...</span>
+<span class="c1">;    Loading &quot;p33-prime.scm&quot;...</span>
+<span class="c1">;      Loading &quot;p33-smallest-divisor.scm&quot;...</span>
+<span class="c1">;        Loading &quot;p33-divides.scm&quot;... done</span>
+<span class="c1">;        Loading &quot;p33-find-divisor.scm&quot;... done</span>
+<span class="c1">;      ... done</span>
+<span class="c1">;    ... done</span>
+<span class="c1">;    Loading &quot;22-next-odd.scm&quot;... done</span>
+<span class="c1">;  ... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: search-for-primes</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">search-for-primes</span> <span class="mi">1000</span><span class="p">)</span>          <span class="c1">; 一千</span>
+<span class="mi">1009</span>
+<span class="mi">1013</span>
+<span class="mi">1019</span>
+<span class="nv">are</span> <span class="nv">primes</span><span class="o">.</span>
+<span class="c1">;Value: 1</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">search-for-primes</span> <span class="mi">10000</span><span class="p">)</span>         <span class="c1">; 一万</span>
+<span class="mi">10007</span>
+<span class="mi">10009</span>
+<span class="mi">10037</span>
+<span class="nv">are</span> <span class="nv">primes</span><span class="o">.</span>
+<span class="c1">;Value: 1</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">search-for-primes</span> <span class="mi">100000</span><span class="p">)</span>        <span class="c1">; 十万</span>
+<span class="mi">100003</span>
+<span class="mi">100019</span>
+<span class="mi">100043</span>
+<span class="nv">are</span> <span class="nv">primes</span><span class="o">.</span>
+<span class="c1">;Value: 3</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">search-for-primes</span> <span class="mi">1000000</span><span class="p">)</span>       <span class="c1">; 一百万</span>
+<span class="mi">1000003</span>
+<span class="mi">1000033</span>
+<span class="mi">1000037</span>
+<span class="nv">are</span> <span class="nv">primes</span><span class="o">.</span>
+<span class="c1">;Value: 7</span>
+</pre></div>
+</div>
+<p>可以看到，当 <tt class="docutils literal"><span class="pre">search-for-primes</span></tt> 的输入以 10 为倍数上升时，寻找素数所需的时间并不是严格地按照 <span class="math">\(\sqrt{10}\)</span> 倍上升的，关于这个问题，我们留到 <a class="reference internal" href="24.html"><em>练习 1.24</em></a> 再进行详细的说明。</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">这里并没有使用书本给出的 <tt class="docutils literal"><span class="pre">timed-primes-test</span></tt> 等几个程序来写 <tt class="docutils literal"><span class="pre">search-for-primes</span></tt> 函数，因为使用它们的话反而会使程序变得复杂起来，所以没有必要多此一举。</p>
+</div>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'sicp'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, huangz1990.
+      Last updated on Jun 25, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br>
+<br>
+<br>
+
+
+<style type="text/css">
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    display: none;
+    bottom: 11px;
+    right: 166px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    display: block;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll 0px -46px no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    background-position: top left;
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/sicp/?fromdocs=sicp" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

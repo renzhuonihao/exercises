@@ -1,0 +1,12 @@
+(define dx 0.0000001)
+(define (smooth f)
+  (lambda (x) (/ (+ (f (+ x dx))
+                    (f (- x dx))
+                    (f x))
+                 3)))
+(define (repeated f times)
+  (define (iter count result)
+    (if (= count times)
+        result
+        (iter (+ count 1) (smooth result))))
+  (iter 0 (lambda (x) x)))

@@ -1,0 +1,6 @@
+  1)what is the loop invariant?
+
+ 2)how to confirm the parameters?	
+3)this program is too complex,i wrote it so ugly
+
+4)×ÐÏ¸¼ÆËã±ß½ç

@@ -1,0 +1,13 @@
+(define (make-point x y) (cons x y))
+(define (x-point point) (car point))
+(define (y-point point) (cdr point))
+
+
+(define (cal-circu rect)
+  (let ((v (vert rect))
+	(h (hor rect)))
+    (* 2 (+ v h))))
+(define (cal-area rect)
+  (let ((v (vert rect))
+	(h (hor rect)))
+    (* h v)))

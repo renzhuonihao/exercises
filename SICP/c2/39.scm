@@ -1,0 +1,17 @@
+(define nil '())
+(define (accumulate op initial sequence)
+  (if (null? sequence)
+      initial
+      (op (car sequence)
+          (accumulate op initial (cdr sequence)))))
+(define (fold-left op initial seq)
+  (define (iter result rest)
+    (if (null? rest)
+        result
+        (iter (op result (car rest))
+              (cdr rest))))
+  (iter initial seq))
+(define (r-reverse seq)
+  (accumulate (lambda (x y) (append y (list x))) nil seq))
+(define (l-reverse seq)
+  (fold-left (lambda (x y) (append (list y) x)) nil seq))

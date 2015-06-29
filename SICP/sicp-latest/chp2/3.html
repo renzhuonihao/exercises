@@ -1,0 +1,643 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>练习 2.3 &mdash; SICP 解题集</title>
+<!-- RTD <head> -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "sicp";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="SICP 解题集" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>练习 2.3<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>我们可以首先写出两种不同的矩形实现，然后再进行面积和周长的计算。</p>
+<p>但是，有一个更好的办法，那就是，先不考虑矩形的具体实现，而是使用按愿望思维的方式，假设已经有某种制造出矩形的办法，以及以下两个选择函数：</p>
+<ul class="simple">
+<li><tt class="docutils literal"><span class="pre">length-of-rectangle</span></tt> 接受一个矩形作为参数，并返回矩形的长的长度</li>
+<li><tt class="docutils literal"><span class="pre">width-of-rectangle</span></tt> 接受一个矩形作为参数，并返回矩形的宽的长度</li>
+</ul>
+<p>有了这两个函数的话，我们就可以根据公式来计算给定矩形的周长和面积了。</p>
+<div class="section" id="id2">
+<h2>周长<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>矩形的周长可以通过以下公式计算：</p>
+<p><span class="math">\(perimeter = 2 * (length + width)\)</span></p>
+<p>相应的周长计算函数的定义如下：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-perimeter.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">perimeter-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nb">length </span><span class="p">(</span><span class="nf">length-of-rectangle</span> <span class="nv">r</span><span class="p">))</span>
+          <span class="p">(</span><span class="nf">width</span> <span class="p">(</span><span class="nf">width-of-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+        <span class="p">(</span><span class="nb">* </span><span class="mi">2</span> 
+           <span class="p">(</span><span class="nb">+ </span><span class="nv">length</span> <span class="nv">width</span><span class="p">))))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>面积<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>矩形的面积可以通过以下公式计算：</p>
+<p><span class="math">\(area = length * width\)</span></p>
+<p>相应的面积计算函数的定义如下：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-area.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">area-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">* </span><span class="p">(</span><span class="nf">length-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+       <span class="p">(</span><span class="nf">width-of-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>矩形表示(1)：使用两对线段<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>在前面我们给出了计算矩形的周长和面积的函数，是时候来考虑如何去实现矩形了。</p>
+<p>最直观的表示矩形的方法是使用两对线段，一对表示矩形的长，另一对表示矩形的宽。</p>
+<p>以下就是一个采用这种表示的矩形，其中矩形的长为一对长度为 3 的线段，而矩形的宽则是一对长度为 2 的线段：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="nv">y</span>
+
+<span class="mi">5</span>
+   <span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>     <span class="nv">l1</span>   <span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="mi">4</span>    <span class="nv">+--------------+</span>
+     <span class="nv">|</span>              <span class="nv">|</span>
+<span class="mi">3</span> <span class="nv">w1</span> <span class="nv">|</span>              <span class="nv">|</span> <span class="nv">w2</span>
+     <span class="nv">|</span>              <span class="nv">|</span>
+<span class="mi">2</span>    <span class="nv">+--------------+</span>
+   <span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>     <span class="nv">l2</span>    <span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="mi">1</span>
+
+<span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>    <span class="mi">4</span>    <span class="mi">5</span>    <span class="nv">x</span>
+</pre></div>
+</div>
+<p>其中 <span class="math">\(l1\)</span> 的起点为 <span class="math">\((1,4)\)</span> ，终点为 <span class="math">\((4,4)\)</span> ，而 <span class="math">\(l2\)</span> 的起点为 <span class="math">\((1,2)\)</span> ，终点为 <span class="math">\((4,2)\)</span> ； <span class="math">\(w1\)</span> 的起点为 <span class="math">\((1,2)\)</span> ，终点为 <span class="math">\((1,4)\)</span> ； <span class="math">\(w2\)</span> 的起点为 <span class="math">\((4,2)\)</span> ，终点为 <span class="math">\((4,4)\)</span> 。</p>
+<p>以下是这种表示相对应的构造函数和选择函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-rectangle-represent.scm</span>
+
+<span class="c1">;; constructor</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">make-rectangle</span> <span class="nv">length-1</span> <span class="nv">length-2</span> <span class="nv">width-1</span> <span class="nv">width-2</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">cons </span><span class="p">(</span><span class="nb">cons </span><span class="nv">length-1</span> <span class="nv">length-2</span><span class="p">)</span>
+          <span class="p">(</span><span class="nb">cons </span><span class="nv">width-1</span> <span class="nv">width-2</span><span class="p">)))</span>
+
+<span class="c1">;; selector</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">length-1-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">car </span><span class="p">(</span><span class="nb">car </span><span class="nv">r</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">length-2-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">cdr </span><span class="p">(</span><span class="nb">car </span><span class="nv">r</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">width-1-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">car </span><span class="p">(</span><span class="nb">cdr </span><span class="nv">r</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">width-2-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">cdr </span><span class="p">(</span><span class="nb">cdr </span><span class="nv">r</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>虽然有了矩形的构造函数和选择函数，但是我们还需要借用 <a class="reference internal" href="2.html"><em>练习 2.2</em></a> 的线段和点的表示，才能构造一个完整的矩形表示：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-point-constructor.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;2-point-constructor.scm&quot;... done</span>
+<span class="c1">;Value: make-point</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-point-constructor.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;2-point-constructor.scm&quot;... done</span>
+<span class="c1">;Value: make-point</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-segment-constructor.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;2-segment-constructor.scm&quot;... done</span>
+<span class="c1">;Value: make-segment</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-segment-selector.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;2-segment-selector.scm&quot;... done</span>
+<span class="c1">;Value: end-segment</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-rectangle-represent.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-rectangle-represent.scm&quot;... done</span>
+<span class="c1">;Value: width-2-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">length-1</span> <span class="p">(</span><span class="nf">make-segment</span> <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">4</span><span class="p">)</span>
+                                     <span class="p">(</span><span class="nf">make-point</span> <span class="mi">4</span> <span class="mi">4</span><span class="p">)))</span>
+
+<span class="c1">;Value: length-1</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">length-2</span> <span class="p">(</span><span class="nf">make-segment</span> <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span>
+                                     <span class="p">(</span><span class="nf">make-point</span> <span class="mi">4</span> <span class="mi">2</span><span class="p">)))</span>
+
+<span class="c1">;Value: length-2</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">width-1</span> <span class="p">(</span><span class="nf">make-segment</span> <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span>
+                                    <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">4</span><span class="p">)))</span>
+
+<span class="c1">;Value: width-1</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">width-2</span> <span class="p">(</span><span class="nf">make-segment</span> <span class="p">(</span><span class="nf">make-point</span> <span class="mi">4</span> <span class="mi">2</span><span class="p">)</span>
+                                    <span class="p">(</span><span class="nf">make-point</span> <span class="mi">4</span> <span class="mi">4</span><span class="p">)))</span>
+
+<span class="c1">;Value: width-2</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">rectangle</span> <span class="p">(</span><span class="nf">make-rectangle</span> <span class="nv">length-1</span> <span class="nv">length-2</span> <span class="nv">width-1</span> <span class="nv">width-2</span><span class="p">))</span>
+
+<span class="c1">;Value: rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="nv">rectangle</span>
+
+<span class="c1">;Value 11: ((((1 . 4) 4 . 4) (1 . 2) 4 . 2) ((1 . 2) 1 . 4) (4 . 2) 4 . 4)</span>
+</pre></div>
+</div>
+<p>测试代码的最后，打印出的矩形信息非常不好看，说明我们还需要写一个打印矩形信息的函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-print-rectangle.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-segment-selector.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-print-point.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">print-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">l1</span> <span class="p">(</span><span class="nf">length-1-rectangle</span> <span class="nv">r</span><span class="p">))</span>
+          <span class="p">(</span><span class="nf">l2</span> <span class="p">(</span><span class="nf">length-2-rectangle</span> <span class="nv">r</span><span class="p">))</span>
+          <span class="p">(</span><span class="nf">w1</span> <span class="p">(</span><span class="nf">width-1-rectangle</span> <span class="nv">r</span><span class="p">))</span>
+          <span class="p">(</span><span class="nf">w2</span> <span class="p">(</span><span class="nf">width-2-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+
+        <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">display </span><span class="s">&quot;Length 1:&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">l1</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">l1</span><span class="p">))</span>
+
+        <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">display </span><span class="s">&quot;Length 2:&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">l2</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">l2</span><span class="p">))</span>
+
+        <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">display </span><span class="s">&quot;Width 1:&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">w1</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">w1</span><span class="p">))</span>
+
+        <span class="p">(</span><span class="nf">newline</span><span class="p">)</span>
+        <span class="p">(</span><span class="nb">display </span><span class="s">&quot;Width 2:&quot;</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">w2</span><span class="p">))</span>
+        <span class="p">(</span><span class="nf">print-point</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">w2</span><span class="p">))))</span>
+</pre></div>
+</div>
+<p>载入打印函数，重新打印前面代码中的矩形表示：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-print-rectangle.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-print-rectangle.scm&quot;...</span>
+<span class="c1">;  Loading &quot;2-segment-selector.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;2-print-point.scm&quot;...</span>
+<span class="c1">;    Loading &quot;2-point-selector.scm&quot;... done</span>
+<span class="c1">;  ... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: print-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">print-rectangle</span> <span class="nv">rectangle</span><span class="p">)</span>
+
+<span class="nv">Length</span> <span class="mi">1</span><span class="nv">:</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="nv">Length</span> <span class="mi">2</span><span class="nv">:</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="nv">Width</span> <span class="mi">1</span><span class="nv">:</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="nv">Width</span> <span class="mi">2</span><span class="nv">:</span>
+<span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="c1">;Unspecified return value</span>
+</pre></div>
+</div>
+<p>现在的打印比之前解释器默认的打印信息清晰多了（虽然还是不怎么好看）。</p>
+</div>
+<div class="section" id="id5">
+<h2>矩形表示(1)：长和宽<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>要计算周长和面积，我们还缺少 <tt class="docutils literal"><span class="pre">length-of-rectangle</span></tt> 和 <tt class="docutils literal"><span class="pre">width-of-rectangle</span></tt> 两个函数，因为目前的表示使用线段构成，因此通过计算线段的长度，就可以给出相应的边的长度。</p>
+<p>以下是相应的函数实现：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-length-and-width-of-rectangle.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-rectangle-represent.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-segment-selector.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">length-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nb">length </span><span class="p">(</span><span class="nf">length-1-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+        <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">start</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">length</span><span class="p">))</span>
+              <span class="p">(</span><span class="nf">end</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">length</span><span class="p">)))</span>
+            <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">x-point</span> <span class="nv">end</span><span class="p">)</span>
+               <span class="p">(</span><span class="nf">x-point</span> <span class="nv">start</span><span class="p">)))))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">width-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">width</span> <span class="p">(</span><span class="nf">width-1-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+        <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">start</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">width</span><span class="p">))</span>
+              <span class="p">(</span><span class="nf">end</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">width</span><span class="p">)))</span>
+            <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">y-point</span> <span class="nv">end</span><span class="p">)</span>
+               <span class="p">(</span><span class="nf">y-point</span> <span class="nv">start</span><span class="p">)))))</span>
+</pre></div>
+</div>
+<p>对前面定义的矩形变量进行测量：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-length-and-width-of-rectangle.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-length-and-width-of-rectangle.scm&quot;...</span>
+<span class="c1">;  Loading &quot;3-rectangle-represent.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;2-segment-selector.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: width-of-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">width-of-rectangle</span> <span class="nv">rectangle</span><span class="p">)</span>
+
+<span class="c1">;Value: 2</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">length-of-rectangle</span> <span class="nv">rectangle</span><span class="p">)</span>
+
+<span class="c1">;Value: 3</span>
+</pre></div>
+</div>
+<p>计算的长和宽都正确，现在可以载入前面定义的周长和面积函数，进行测试了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-perimeter.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-perimeter.scm&quot;... done</span>
+<span class="c1">;Value: perimeter-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">perimeter-rectangle</span> <span class="nv">rectangle</span><span class="p">)</span>
+
+<span class="c1">;Value: 10</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-area.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-area.scm&quot;... done</span>
+<span class="c1">;Value: area-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">area-rectangle</span> <span class="nv">rectangle</span><span class="p">)</span>
+
+<span class="c1">;Value: 6</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>矩形表示(2)：使用两条线段<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>矩形的另一种表示方式是，只使用两条边，一条表示长，一条表示宽。</p>
+<p>以下就是一个采用这种表示的矩形，其中矩形的长为一条长度为 3 的线段，而矩形的宽则是一条长度为 2 的线段：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="nv">y</span>
+
+<span class="mi">5</span>
+   <span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="mi">4</span>    <span class="nv">+</span>
+     <span class="nv">|</span>
+<span class="mi">3</span>    <span class="nv">|</span> <span class="nv">width</span>
+     <span class="nv">|</span>
+<span class="mi">2</span>    <span class="nv">+--------------+</span>
+   <span class="p">(</span><span class="mi">1</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>   <span class="nv">length</span>  <span class="p">(</span><span class="mi">4</span><span class="o">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="mi">1</span>
+
+<span class="mi">0</span>    <span class="mi">1</span>    <span class="mi">2</span>    <span class="mi">3</span>    <span class="mi">4</span>    <span class="mi">5</span>    <span class="nv">x</span>
+</pre></div>
+</div>
+<p>其中 <span class="math">\(length\)</span> 的起点为 <span class="math">\((1,2)\)</span> ，终点为 <span class="math">\((4,2)\)</span> ， <span class="math">\(width\)</span> 的起点为 <span class="math">\((1,2)\)</span> ，终点为 <span class="math">\((1,4)\)</span> 。</p>
+<p>以下是这种表示相对应的构造函数和选择函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-another-rectangle-represent.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">make-rectangle</span> <span class="nv">length</span> <span class="nv">width</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">cons </span><span class="nv">length</span> <span class="nv">width</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">length-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">car </span><span class="nv">r</span><span class="p">))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">width-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">cdr </span><span class="nv">r</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>以及和这种表示相对应的 <tt class="docutils literal"><span class="pre">length-of-rectangle</span></tt> 和 <tt class="docutils literal"><span class="pre">width-of-rectangle</span></tt> ：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 3-another-length-and-width-of-rectangle.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-segment-selector.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-point-selector.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-another-rectangle-represent.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">length-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nb">length </span><span class="p">(</span><span class="nf">length-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+        <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">start</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">length</span><span class="p">))</span>
+              <span class="p">(</span><span class="nf">end</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">length</span><span class="p">)))</span>
+            <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">x-point</span> <span class="nv">end</span><span class="p">)</span>
+               <span class="p">(</span><span class="nf">x-point</span> <span class="nv">start</span><span class="p">)))))</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">width-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+    <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">width</span> <span class="p">(</span><span class="nf">width-rectangle</span> <span class="nv">r</span><span class="p">)))</span>
+        <span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">start</span> <span class="p">(</span><span class="nf">start-segment</span> <span class="nv">width</span><span class="p">))</span>
+              <span class="p">(</span><span class="nf">end</span> <span class="p">(</span><span class="nf">end-segment</span> <span class="nv">width</span><span class="p">)))</span>
+            <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">y-point</span> <span class="nv">end</span><span class="p">)</span>
+               <span class="p">(</span><span class="nf">y-point</span> <span class="nv">start</span><span class="p">)))))</span>
+</pre></div>
+</div>
+<p>使用新表示来创建矩形：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-another-rectangle-represent.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-another-rectangle-represent.scm&quot;... done</span>
+<span class="c1">;Value: width-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-another-length-and-width-of-rectangle.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-another-length-and-width-of-rectangle.scm&quot;...</span>
+<span class="c1">;  Loading &quot;2-segment-selector.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;3-another-rectangle-represent.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: width-of-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-segment-constructor.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;2-segment-constructor.scm&quot;... done</span>
+<span class="c1">;Value: make-segment</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;2-point-constructor.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;2-point-constructor.scm&quot;... done</span>
+<span class="c1">;Value: make-point</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">l</span> <span class="p">(</span><span class="nf">make-segment</span> <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span>
+                              <span class="p">(</span><span class="nf">make-point</span> <span class="mi">4</span> <span class="mi">2</span><span class="p">)))</span>
+
+<span class="c1">;Value: l</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">w</span> <span class="p">(</span><span class="nf">make-segment</span> <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span>
+                              <span class="p">(</span><span class="nf">make-point</span> <span class="mi">1</span> <span class="mi">4</span><span class="p">)))</span>
+
+<span class="c1">;Value: w</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">r</span> <span class="p">(</span><span class="nf">make-rectangle</span> <span class="nv">l</span> <span class="nv">w</span><span class="p">))</span>
+
+<span class="c1">;Value: r</span>
+</pre></div>
+</div>
+<p>计算长和宽的长度：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-another-length-and-width-of-rectangle.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-another-length-and-width-of-rectangle.scm&quot;...</span>
+<span class="c1">;  Loading &quot;2-segment-selector.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;2-point-selector.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;3-another-rectangle-represent.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: width-of-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">length-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+
+<span class="c1">;Value: 3</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">width-of-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+
+<span class="c1">;Value: 2</span>
+</pre></div>
+</div>
+<p>计算周长和面积：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-perimeter.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-perimeter.scm&quot;... done</span>
+<span class="c1">;Value: perimeter-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">perimeter-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+
+<span class="c1">;Value: 10</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;3-area.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;3-area.scm&quot;... done</span>
+<span class="c1">;Value: area-rectangle</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">area-rectangle</span> <span class="nv">r</span><span class="p">)</span>
+
+<span class="c1">;Value: 6</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id7">
+<h2>两种实现<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>可以看到，在两种不同的矩形表示中切换时，相应的周长和面积计算函数完全不必修改，我们只要写好不同实现所需的构造函数和选择函数就行了。</p>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'sicp'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, huangz1990.
+      Last updated on Jun 25, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br>
+<br>
+<br>
+
+
+<style type="text/css">
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    display: none;
+    bottom: 11px;
+    right: 166px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    display: block;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll 0px -46px no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    background-position: top left;
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/sicp/?fromdocs=sicp" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

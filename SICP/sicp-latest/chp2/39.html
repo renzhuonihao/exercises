@@ -1,0 +1,404 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>练习 2.39 &mdash; SICP 解题集</title>
+<!-- RTD <head> -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "sicp";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="SICP 解题集" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>练习 2.39<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>通过研究 <tt class="docutils literal"><span class="pre">fold-left</span></tt> 的定义（在<a class="reference internal" href="38.html"><em>练习 2.38</em></a>），可以看出 <tt class="docutils literal"><span class="pre">fold-left</span></tt> 的展开规则为（使用列表 <tt class="docutils literal"><span class="pre">(list</span> <span class="pre">1</span> <span class="pre">2</span> <span class="pre">3</span> <span class="pre">4)</span></tt> 作为例子）：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="nf">fold-left</span> <span class="nv">f</span> <span class="o">&#39;</span><span class="p">()</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nf">f</span> <span class="o">&#39;</span><span class="p">()</span> <span class="mi">1</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="o">&#39;</span><span class="p">()</span> <span class="mi">1</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="o">&#39;</span><span class="p">()</span> <span class="mi">1</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">3</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="p">(</span><span class="nf">f</span> <span class="o">&#39;</span><span class="p">()</span> <span class="mi">1</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">3</span><span class="p">)</span> <span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>而要生成列表的逆序，我们需要这样一个计算序列（依然使用列表 <tt class="docutils literal"><span class="pre">(list</span> <span class="pre">1</span> <span class="pre">2</span> <span class="pre">3</span> <span class="pre">4)</span></tt> 作例子）：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="nb">reverse </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="o">&#39;</span><span class="p">())</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">2</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="o">&#39;</span><span class="p">()))</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">3</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">2</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="o">&#39;</span><span class="p">())))</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nb">cons </span><span class="mi">4</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">3</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">2</span> <span class="p">(</span><span class="nb">cons </span><span class="mi">1</span> <span class="o">&#39;</span><span class="p">()))))</span>
+</pre></div>
+</div>
+<p>可以看出，这两个计算序列非常相似，唯一的不同就是函数 <tt class="docutils literal"><span class="pre">f</span></tt> 和函数 <tt class="docutils literal"><span class="pre">cons</span></tt> 的参数位置不同，不过这个问题并不难解决，只要在函数体内调整两个参数的位置就行了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">cons </span><span class="nv">y</span> <span class="nv">x</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>综合上面叙述，可以给出相应的函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 39-reverse-using-fold-left.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nb">reverse </span><span class="nv">sequence</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">fold-left</span> <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+                   <span class="p">(</span><span class="nb">cons </span><span class="nv">y</span> <span class="nv">x</span><span class="p">))</span>
+               <span class="o">&#39;</span><span class="p">()</span>
+               <span class="nv">sequence</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;39-reverse-using-fold-left.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;39-reverse-using-fold-left.scm&quot;... done</span>
+<span class="c1">;Value: reverse</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">reverse </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="c1">;Value 11: (4 3 2 1)</span>
+</pre></div>
+</div>
+<p>测试所执行的表达式的展开过程和前面给出的展开过程完全一样。</p>
+<div class="section" id="fold-right">
+<h2>fold-right<a class="headerlink" href="#fold-right" title="Permalink to this headline">¶</a></h2>
+<p>要使用 <tt class="docutils literal"><span class="pre">fold-right</span></tt> 实现 <tt class="docutils literal"><span class="pre">reverse</span></tt> 函数，我们同样先分析 <tt class="docutils literal"><span class="pre">fold-right</span></tt> 的展开序列：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="nf">fold-right</span> <span class="nv">f</span> <span class="o">&#39;</span><span class="p">()</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">f</span> <span class="mi">1</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">f</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">2</span> <span class="o">...</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">f</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">2</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">3</span> <span class="o">...</span><span class="p">)))</span>
+
+<span class="p">(</span><span class="nf">f</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">2</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">3</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">4</span> <span class="o">...</span><span class="p">))))</span>
+
+<span class="p">(</span><span class="nf">f</span> <span class="mi">1</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">2</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">3</span> <span class="p">(</span><span class="nf">f</span> <span class="mi">4</span> <span class="o">&#39;</span><span class="p">()))))</span>
+</pre></div>
+</div>
+<p>要生成列表的逆序，我们需要让 <tt class="docutils literal"><span class="pre">fold-right</span></tt> 生成这样一个计算序列：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="nb">reverse </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">fold-right</span> <span class="nv">g</span> <span class="o">&#39;</span><span class="p">()</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nf">g</span> <span class="mi">4</span> <span class="o">&#39;</span><span class="p">())</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nf">g</span> <span class="mi">4</span> <span class="o">&#39;</span><span class="p">())</span> <span class="mi">3</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="o">...</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nf">g</span> <span class="mi">4</span> <span class="o">&#39;</span><span class="p">())</span> <span class="mi">3</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="o">...</span><span class="p">)</span>
+
+<span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nf">g</span> <span class="p">(</span><span class="nf">g</span> <span class="mi">4</span> <span class="o">&#39;</span><span class="p">())</span> <span class="mi">3</span><span class="p">)</span> <span class="mi">2</span><span class="p">)</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>要倒转函数的组合顺序，可以通过在函数体内调整参数的位置来做到这一点，在前面的 <tt class="docutils literal"><span class="pre">reverse</span></tt> 定义中我们已经看到了这一点：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">g</span> <span class="nv">y</span> <span class="nv">x</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>问题的关键就是找出函数 <tt class="docutils literal"><span class="pre">g</span></tt> ，从 <tt class="docutils literal"><span class="pre">fold-left</span></tt> 的经验看来， <tt class="docutils literal"><span class="pre">cons</span></tt> 很有可能就是 <tt class="docutils literal"><span class="pre">g</span></tt> ，而且 <tt class="docutils literal"><span class="pre">(cons</span> <span class="pre">4</span> <span class="pre">'())</span></tt> 似乎也说得过去，不过当计算进展到第二步时，计算就变成了 <tt class="docutils literal"><span class="pre">(cons</span> <span class="pre">(cons</span> <span class="pre">4</span> <span class="pre">'())</span> <span class="pre">3)</span></tt> ，这时再用 <tt class="docutils literal"><span class="pre">cons</span></tt> 就说不通了，因此 <tt class="docutils literal"><span class="pre">cons</span></tt> 不是我们所寻找的函数 <tt class="docutils literal"><span class="pre">g</span></tt> 。</p>
+<p>从 <tt class="docutils literal"><span class="pre">cons</span></tt> 失败的经验来看， <tt class="docutils literal"><span class="pre">g</span></tt> 应该不仅仅能处理单个元素，它还应该能将一个列表和单个元素组合起来形成一个新列表，这也就是书本 68 页介绍过的 <tt class="docutils literal"><span class="pre">append</span></tt> 函数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">append </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="c1">;Value 12: (1 2 3 4 5 6)</span>
+</pre></div>
+</div>
+<p>虽然 <tt class="docutils literal"><span class="pre">append</span></tt> 要求两个参数都是列表，但是让一个列表和单个元素组合起来也不太难，只要将单个元素转换成一个包含单个元素的列表就行了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">append </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span> <span class="mi">4</span><span class="p">)</span>           <span class="c1">; 组合单个元素</span>
+
+<span class="c1">;Value 13: (1 2 3 . 4)</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">append </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">4</span><span class="p">))</span>    <span class="c1">; 组合两个列表</span>
+
+<span class="c1">;Value 14: (1 2 3 4)</span>
+</pre></div>
+</div>
+<p>这样的话，函数 <tt class="docutils literal"><span class="pre">g</span></tt> 的定义终于浮出水面了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+    <span class="p">(</span><span class="nb">append </span><span class="nv">y</span> <span class="p">(</span><span class="nb">list </span><span class="nv">x</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>根据以上给出的条件，现在可以写出用 <tt class="docutils literal"><span class="pre">fold-right</span></tt> 实现的 <tt class="docutils literal"><span class="pre">reverse</span></tt> 函数了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 39-reverse-using-fold-right.scm</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nb">reverse </span><span class="nv">sequence</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">fold-right</span> <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+                    <span class="p">(</span><span class="nb">append </span><span class="nv">y</span> <span class="p">(</span><span class="nb">list </span><span class="nv">x</span><span class="p">)))</span>
+                <span class="o">&#39;</span><span class="p">()</span>
+                <span class="nv">sequence</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;39-reverse-using-fold-right.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;39-reverse-using-fold-right.scm&quot;... done</span>
+<span class="c1">;Value: reverse</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">reverse </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span><span class="p">))</span>
+
+<span class="c1">;Value 12: (7 6 5 4 3 2 1)</span>
+</pre></div>
+</div>
+<p>这个表达式的计算展开是：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="nb">reverse </span><span class="p">(</span><span class="nb">list </span><span class="mi">1</span> <span class="mi">2</span> <span class="mi">3</span> <span class="mi">4</span> <span class="mi">5</span> <span class="mi">6</span> <span class="mi">7</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">()</span> <span class="p">(</span><span class="nb">list </span><span class="mi">7</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">6</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span> <span class="mi">6</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">5</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span> <span class="mi">6</span> <span class="mi">5</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">4</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span> <span class="mi">6</span> <span class="mi">5</span> <span class="mi">4</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">3</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span> <span class="mi">6</span> <span class="mi">5</span> <span class="mi">4</span> <span class="mi">3</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">2</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nb">append </span><span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span> <span class="mi">6</span> <span class="mi">5</span> <span class="mi">4</span> <span class="mi">3</span> <span class="mi">2</span><span class="p">)</span> <span class="p">(</span><span class="nb">list </span><span class="mi">1</span><span class="p">))</span>
+
+<span class="o">&#39;</span><span class="p">(</span><span class="mi">7</span> <span class="mi">6</span> <span class="mi">5</span> <span class="mi">4</span> <span class="mi">3</span> <span class="mi">2</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id2">
+<h2>效率<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>我们分别使用 <tt class="docutils literal"><span class="pre">fold-left</span></tt> 和 <tt class="docutils literal"><span class="pre">fold-right</span></tt> 两种方法定义了 <tt class="docutils literal"><span class="pre">reverse</span></tt> 函数，除了实现方面的不同外，它们的效率也有很大的区别：</p>
+<p><tt class="docutils literal"><span class="pre">fold-left</span></tt> 实现的 <tt class="docutils literal"><span class="pre">reverse</span></tt> 每次都递归地使用 <tt class="docutils literal"><span class="pre">cons</span></tt> 组合起一个元素和一个列表，每次组合操作的时间复杂度为 <span class="math">\(O(1)\)</span> ，空间复杂度为 <span class="math">\(O(1)\)</span> ，翻转整个列表所需的时间复杂度为 <span class="math">\(O(n)\)</span> ，空间的复杂度也为 <span class="math">\(O(n)\)</span> ，它是一个线性复杂度的线性递归过程。</p>
+<p>另一方面， <tt class="docutils literal"><span class="pre">fold-right</span></tt> 实现的 <tt class="docutils literal"><span class="pre">reverse</span></tt> 每次都递归地使用 <tt class="docutils literal"><span class="pre">append</span></tt> 将一个列表和一个包含单个元素的列表组合起来，每次组合操作的时间复杂度为 <span class="math">\(O(n)\)</span> ，空间复杂度为 <span class="math">\(O(1)\)</span> ，翻转整个列表所需的时间复杂度为 <span class="math">\(O(n^2)\)</span> ，而空间复杂度为 <span class="math">\(O(n)\)</span> ，它是一个二次复杂度的线性递归过程。</p>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last"><a class="reference internal" href="38.html"><em>练习 2.38</em></a> 的最后部分有关于 <tt class="docutils literal"><span class="pre">fold</span></tt> 操作的更多资料。</p>
+</div>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'sicp'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, huangz1990.
+      Last updated on Jun 25, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br>
+<br>
+<br>
+
+
+<style type="text/css">
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    display: none;
+    bottom: 11px;
+    right: 166px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    display: block;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll 0px -46px no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    background-position: top left;
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/sicp/?fromdocs=sicp" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

@@ -1,0 +1,598 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>练习 2.83 &mdash; SICP 解题集</title>
+<!-- RTD <head> -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "sicp";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="SICP 解题集" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>练习 2.83<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>根据题目给定的四个包：复数、实数、有理数和整数，我们可以假设四个包中都有一个通用型的 <tt class="docutils literal"><span class="pre">raise</span></tt> 操作，而每个 <tt class="docutils literal"><span class="pre">raise</span></tt> 操作又调用一个实际执行提升工作的函数，那样的话，可以给出以下的结构图：</p>
+<div class="highlight-scheme"><pre>层次：          提升函数：
+
+复数
+
+ ^
+ |  raise  -&gt;  real-&gt;complex
+ |
+
+实数
+
+ ^
+ |  raise  --&gt;  rational-&gt;real
+ |
+
+有理数
+
+ ^
+ |  raise  --&gt;  integer-&gt;rational
+ |
+
+整数</pre>
+</div>
+<p>剩下的工作就是定义通用操作 <tt class="docutils literal"><span class="pre">raise</span></tt> ，并在各个包中实现 <tt class="docutils literal"><span class="pre">raise</span></tt> 以及相应的提升函数。</p>
+<div class="section" id="id2">
+<h2>实现<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>在之前的问题中，我们的研究对象一直是自己实现的 scheme 数值包、有理数包和复数包，这个问题提出了两个之前没有实现过的包：整数包和实数包。</p>
+<p>为了实现的简单性，我们在这里不再使用之前的包，而是利用 scheme 内置的整数、有理数、实数和复数函数，新建四个除了 <tt class="docutils literal"><span class="pre">make-xxx</span></tt> 函数和 <tt class="docutils literal"><span class="pre">raise</span></tt> 函数之外没有其他操作的实现，这样可以将重点放到类型提升的问题上，又不必化太多时间实现功能完整的包。</p>
+</div>
+<div class="section" id="raise">
+<h2>定义 raise<a class="headerlink" href="#raise" title="Permalink to this headline">¶</a></h2>
+<p>以下是通用操作 <tt class="docutils literal"><span class="pre">raise</span></tt> 的定义（为了简化问题，这里没有使用 <a class="reference internal" href="82.html"><em>练习 2.82</em></a> 的 <tt class="docutils literal"><span class="pre">apply-generic</span></tt> ）：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 83-raise.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p125-apply-generic.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">raise</span> <span class="nv">value</span><span class="p">)</span>
+    <span class="p">(</span><span class="nf">apply-generic</span> <span class="ss">&#39;raise</span> <span class="nv">value</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id3">
+<h2>整数算术包<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>整数包的定义可以直接重用 scheme 的整数类型：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 83-install-integer-package.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p123-put-and-get.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">install-integer-package</span><span class="p">)</span>
+
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">tag</span> <span class="nv">x</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">attach-tag</span> <span class="ss">&#39;integer</span> <span class="nv">x</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;make</span> <span class="ss">&#39;integer</span>
+        <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span><span class="p">)</span>
+            <span class="p">(</span><span class="nf">tag</span> <span class="p">(</span><span class="nb">round </span><span class="p">(</span><span class="nb">truncate </span><span class="nv">x</span><span class="p">)))))</span>  <span class="c1">; 截断小数点（如果有的话）</span>
+
+    <span class="c1">; 提升函数</span>
+
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">integer-&gt;rational</span> <span class="nv">x</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">make-rational</span> <span class="nv">x</span> <span class="mi">1</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;raise</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">integer</span><span class="p">)</span> <span class="nv">integer-&gt;rational</span><span class="p">)</span>
+
+<span class="ss">&#39;done</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">make-integer</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">((</span><span class="nf">get</span> <span class="ss">&#39;make</span> <span class="ss">&#39;integer</span><span class="p">)</span> <span class="nv">n</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>其中 <tt class="docutils literal"><span class="pre">integer-&gt;rational</span></tt> 函数使用了这样一个规则：整数可以转换为分母为 1 的有理数。</p>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-integer-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-integer-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-integer</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-integer-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">make-integer</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="c1">;Value 11: (integer . 10)</span>
+</pre></div>
+</div>
+<p>如果需要调用 <tt class="docutils literal"><span class="pre">raise</span></tt> 函数，我们还要载入稍后才定义的有理数包，因为将整数转为有理数需要有理数包中的 <tt class="docutils literal"><span class="pre">make-rational</span></tt> 函数（注意重新载入并安装包是必须的，因为包会互相覆盖）：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-raise.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-raise.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p125-apply-generic.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: raise</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-integer-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-integer-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-integer</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-rational-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-rational-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-rational</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-integer-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-rational-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">raise</span> <span class="p">(</span><span class="nf">make-integer</span> <span class="mi">10</span><span class="p">))</span>
+
+<span class="c1">;Value 11: (rational . 10)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id4">
+<h2>有理数包<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>利用条件：一个有理数 <tt class="docutils literal"><span class="pre">r</span></tt> 等于 <tt class="docutils literal"><span class="pre">(/</span> <span class="pre">n</span> <span class="pre">d)</span></tt> ，有理数包也可以直接使用 scheme 的有理数类型和除法来表示：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 83-install-rational-package.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p123-put-and-get.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">install-rational-package</span><span class="p">)</span>
+    
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">tag</span> <span class="nv">x</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">attach-tag</span> <span class="ss">&#39;rational</span> <span class="nv">x</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;make</span> <span class="ss">&#39;rational</span>
+        <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+            <span class="p">(</span><span class="nf">tag</span> <span class="p">(</span><span class="nb">/ </span><span class="nv">x</span> <span class="nv">y</span><span class="p">))))</span>
+
+    <span class="c1">; 提升函数</span>
+
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">rational-&gt;real</span> <span class="nv">r</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">make-real</span> <span class="nv">r</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;raise</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">rational</span><span class="p">)</span> <span class="nv">rational-&gt;real</span><span class="p">)</span>
+
+<span class="ss">&#39;done</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">make-rational</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+    <span class="p">((</span><span class="nf">get</span> <span class="ss">&#39;make</span> <span class="ss">&#39;rational</span><span class="p">)</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>其中 <tt class="docutils literal"><span class="pre">rational-&gt;real</span></tt> 函数利用了这样一个规则：有理数可以被直接转换成实数（在 scheme 中，它们之间的差别在于精确值和不精确值）。</p>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-rational-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-rational-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-rational</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-rational-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">make-rational</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1">;Value 11: (rational . 1/2)</span>
+</pre></div>
+</div>
+<p>如果需要调用 <tt class="docutils literal"><span class="pre">raise</span></tt> 函数，我们还要载入稍后才定义的实数包，因为将有理数转为实数需要实数包中的 <tt class="docutils literal"><span class="pre">make-real</span></tt> 函数（注意重新载入并安装包是必须的，因为包会互相覆盖）：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-rational-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-rational-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-rational</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-real-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-real-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-real</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-rational-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-real-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-raise.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-raise.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p125-apply-generic.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: raise</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">raise</span> <span class="p">(</span><span class="nf">make-rational</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="c1">;Value 12: (real . .5)</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">raise</span> <span class="p">(</span><span class="nf">make-rational</span> <span class="mi">3</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="c1">;Value 15: (real . 1.5)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>实数包<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>scheme 中有两种数值精度，一种是带小数点的不精确值，另一种是整数类型或者有理数类型的精确值。</p>
+<p>这个实数包使用不精确值来表示实数：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 83-install-real-package.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p123-put-and-get.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">install-real-package</span><span class="p">)</span>
+    
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">tag</span> <span class="nv">x</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">attach-tag</span> <span class="ss">&#39;real</span> <span class="nv">x</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;make</span> <span class="ss">&#39;real</span>
+        <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">n</span><span class="p">)</span>
+            <span class="p">(</span><span class="nf">tag</span> <span class="p">(</span><span class="nb">exact-&gt;inexact </span><span class="nv">n</span><span class="p">))))</span>
+
+    <span class="c1">; 提升函数</span>
+
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">real-&gt;complex</span> <span class="nv">r</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">make-complex</span> <span class="nv">r</span> <span class="mi">0</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;raise</span> <span class="o">&#39;</span><span class="p">(</span><span class="nv">real</span><span class="p">)</span> <span class="nv">real-&gt;complex</span><span class="p">)</span>
+
+<span class="ss">&#39;done</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">make-real</span> <span class="nv">n</span><span class="p">)</span>
+    <span class="p">((</span><span class="nf">get</span> <span class="ss">&#39;make</span> <span class="ss">&#39;real</span><span class="p">)</span> <span class="nv">n</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>其中 <tt class="docutils literal"><span class="pre">real-&gt;complex</span></tt> 函数使用了这样一个规则：任何实数都是虚部为 0 的复数。</p>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-real-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-real-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-real</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-real-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">make-real</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1">;Value 11: (real . 1.)</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">make-real</span> <span class="p">(</span><span class="nb">/ </span><span class="mi">1</span> <span class="mi">2</span><span class="p">))</span>
+
+<span class="c1">;Value 12: (real . .5)</span>
+</pre></div>
+</div>
+<p>如果需要调用 <tt class="docutils literal"><span class="pre">raise</span></tt> 函数，我们还要载入稍后才定义的复数包，因为将实数转为复数需要复数包中的 <tt class="docutils literal"><span class="pre">make-complex</span></tt> 函数（注意重新载入并安装包是必须的，因为包会互相覆盖）：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-real-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-real-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-real</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-complex-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-complex-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-complex</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-real-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-complex-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-raise.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-raise.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p125-apply-generic.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: raise</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">raise</span> <span class="p">(</span><span class="nf">make-real</span> <span class="mi">1</span><span class="p">))</span>
+
+<span class="c1">;Value 11: (complex . 1.)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id6">
+<h2>复数包<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>复数可以直接使用 scheme 提供的 <tt class="docutils literal"><span class="pre">make-rectangular</span></tt> 函数来创建，我们的包只需要给它打上标签就行了：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="c1">;;; 83-install-complex-package.scm</span>
+
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p123-put-and-get.scm&quot;</span><span class="p">)</span>
+<span class="p">(</span><span class="nb">load </span><span class="s">&quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">install-complex-package</span><span class="p">)</span>
+    
+    <span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">tag</span> <span class="nv">x</span><span class="p">)</span>
+        <span class="p">(</span><span class="nf">attach-tag</span> <span class="ss">&#39;complex</span> <span class="nv">x</span><span class="p">))</span>
+
+    <span class="p">(</span><span class="nf">put</span> <span class="ss">&#39;make</span> <span class="ss">&#39;complex</span>
+        <span class="p">(</span><span class="k">lambda </span><span class="p">(</span><span class="nf">x</span> <span class="nv">y</span><span class="p">)</span>
+            <span class="p">(</span><span class="nf">tag</span> <span class="p">(</span><span class="nb">make-rectangular </span><span class="nv">x</span> <span class="nv">y</span><span class="p">))))</span>
+
+<span class="ss">&#39;done</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">define </span><span class="p">(</span><span class="nf">make-complex</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">)</span>
+    <span class="p">((</span><span class="nf">get</span> <span class="ss">&#39;make</span> <span class="ss">&#39;complex</span><span class="p">)</span> <span class="nv">x</span> <span class="nv">y</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>测试：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;83-install-complex-package.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;83-install-complex-package.scm&quot;...</span>
+<span class="c1">;  Loading &quot;p123-put-and-get.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p119-attach-tag-and-type-tag-and-contents.scm&quot;... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: make-complex</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">install-complex-package</span><span class="p">)</span>
+
+<span class="c1">;Value: done</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">make-complex</span> <span class="mi">1</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="c1">;Value 13: (complex . 1+2i)</span>
+</pre></div>
+</div>
+<p>复数是类型塔中层次最高的，所以没有相应的 <tt class="docutils literal"><span class="pre">raise</span></tt> 操作。</p>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'sicp'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, huangz1990.
+      Last updated on Jun 25, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br>
+<br>
+<br>
+
+
+<style type="text/css">
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    display: none;
+    bottom: 11px;
+    right: 166px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    display: block;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll 0px -46px no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    background-position: top left;
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/sicp/?fromdocs=sicp" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

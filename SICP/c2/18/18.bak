@@ -1,0 +1,8 @@
+(define nil '())
+(define (reverse1 ls)
+  (if (null? ls)
+      nil
+      (append (reverse (cdr ls))
+              (list (car ls)))))
+(define (reverse2 ls)
+  (

@@ -1,0 +1,260 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>练习 3.41 &mdash; SICP 解题集</title>
+<!-- RTD <head> -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "sicp";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="SICP 解题集" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>练习 3.41<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>Ben 的担心是没有必要的，取余额的操作并不对 <tt class="docutils literal"><span class="pre">balance</span></tt> 变量进行设置，它是一个原子性的只读操作。即使在访问 <tt class="docutils literal"><span class="pre">balance</span></tt> 变量时有其他设置操作在进行，解释器也会很好地处理这一状况，所以就算不对 <tt class="docutils literal"><span class="pre">balance</span></tt> 进行串行化，也可以正确地获取 <tt class="docutils literal"><span class="pre">balance</span></tt> 的值。</p>
+<p>为了验证以上的推论，假设现在有余额为 <tt class="docutils literal"><span class="pre">100</span></tt> 的银行帐号，对于 <tt class="docutils literal"><span class="pre">withdraw</span></tt> 、 <tt class="docutils literal"><span class="pre">deposit</span></tt> 和 <tt class="docutils literal"><span class="pre">balance</span></tt> 三种操作，可能出现的并行情况有两种（因为 <tt class="docutils literal"><span class="pre">withdraw</span></tt> 和 <tt class="docutils literal"><span class="pre">deposit</span></tt> 已经进行了串行化，所以这两个操作的并行情况不可能出现）：</p>
+<ol class="arabic simple">
+<li>一个进程执行 <tt class="docutils literal"><span class="pre">((protected</span> <span class="pre">withdraw)</span> <span class="pre">50)</span></tt> 操作，另一个进程并行访问 <tt class="docutils literal"><span class="pre">balance</span></tt> 变量</li>
+<li>一个进程执行 <tt class="docutils literal"><span class="pre">((protected</span> <span class="pre">deposit)</span> <span class="pre">35)</span></tt> 操作，另一个进程并行访问 <tt class="docutils literal"><span class="pre">balance</span></tt> 变量</li>
+</ol>
+<p>这两种并行共有四种可能的运行序列（每个并行两种）：</p>
+<p>序列一： <tt class="docutils literal"><span class="pre">withdraw</span></tt> &#8211;&gt; <tt class="docutils literal"><span class="pre">balance</span></tt></p>
+<p>序列二： <tt class="docutils literal"><span class="pre">balance</span></tt> &#8211;&gt; <tt class="docutils literal"><span class="pre">withdraw</span></tt></p>
+<p>序列三： <tt class="docutils literal"><span class="pre">deposit</span></tt> &#8211;&gt; <tt class="docutils literal"><span class="pre">balance</span></tt></p>
+<p>序列四： <tt class="docutils literal"><span class="pre">balance</span></tt> &#8211;&gt; <tt class="docutils literal"><span class="pre">deposit</span></tt></p>
+<p>对于运行序列一， <tt class="docutils literal"><span class="pre">withdraw</span></tt> 将银行帐号的余额设置为 <tt class="docutils literal"><span class="pre">50</span></tt> ，然后 <tt class="docutils literal"><span class="pre">balance</span></tt> 返回 <tt class="docutils literal"><span class="pre">50</span></tt> 。</p>
+<p>对于运行序列二 ， <tt class="docutils literal"><span class="pre">balance</span></tt> 返回帐号 <tt class="docutils literal"><span class="pre">100</span></tt> ，然后 <tt class="docutils literal"><span class="pre">withdraw</span></tt> 将银行帐号设置为 <tt class="docutils literal"><span class="pre">50</span></tt> 。</p>
+<p>对于运行序列三 ， <tt class="docutils literal"><span class="pre">deposit</span></tt> 将银行帐号的余额设置为 <tt class="docutils literal"><span class="pre">135</span></tt> ，然后 <tt class="docutils literal"><span class="pre">balance</span></tt> 返回 <tt class="docutils literal"><span class="pre">135</span></tt> 。</p>
+<p>对于运行序列四 ， <tt class="docutils literal"><span class="pre">balance</span></tt> 返回余额 <tt class="docutils literal"><span class="pre">100</span></tt> ，然后 <tt class="docutils literal"><span class="pre">deposit</span></tt> 。</p>
+<p>可以看到，在以上四种运行序列中，对 <tt class="docutils literal"><span class="pre">balance</span></tt> 的访问都不会造成任何的并发错误，而 <tt class="docutils literal"><span class="pre">balance</span></tt> 操作也可以正确地返回帐号当时的余额。</p>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'sicp'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, huangz1990.
+      Last updated on Jun 25, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br>
+<br>
+<br>
+
+
+<style type="text/css">
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    display: none;
+    bottom: 11px;
+    right: 166px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    display: block;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll 0px -46px no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    background-position: top left;
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/sicp/?fromdocs=sicp" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>

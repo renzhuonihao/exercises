@@ -1,0 +1,310 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+
+    <title>练习 3.45 &mdash; SICP 解题集</title>
+<!-- RTD <head> -->
+<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/underscore.js"></script>
+<script type="text/javascript" src="//media.readthedocs.org/javascript/doctools.js"></script>
+
+<script type="text/javascript">
+  // This is included here for Javascript that doesn't have access to the templates.
+  var doc_version = "latest";
+  var doc_slug = "sicp";
+</script>
+
+<script type="text/javascript" src="//media.readthedocs.org/javascript/rtd.js"></script>
+<!-- end RTD <head> -->
+
+    
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '1.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="SICP 解题集" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="id1">
+<h1>练习 3.45<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<p>假设现在有两个帐号 <tt class="docutils literal"><span class="pre">peter-acc</span></tt> 和 <tt class="docutils literal"><span class="pre">mary-acc</span></tt> ，对这两个帐号执行 <tt class="docutils literal"><span class="pre">serialized-exchange</span></tt> 操作，看看会发生什么事情：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="p">(</span><span class="nf">serialized-exchange</span> <span class="nv">peter-acc</span> <span class="nv">mary-acc</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">serializer1</span> <span class="p">(</span><span class="nf">peter-acc</span> <span class="ss">&#39;serializer</span><span class="p">))</span>     <span class="c1">; 分别用 peter-acc 和 mary-acc 的 balance-serializer</span>
+      <span class="p">(</span><span class="nf">serializer2</span> <span class="p">(</span><span class="nf">mary-acc</span> <span class="ss">&#39;serializer</span><span class="p">)))</span>     <span class="c1">; 串行化 exchange</span>
+    <span class="p">((</span><span class="nf">serializer1</span> <span class="p">(</span><span class="nf">serializer2</span> <span class="nv">exchange</span><span class="p">))</span>
+     <span class="nv">peter-acc</span>
+     <span class="nv">mary-acc</span><span class="p">))</span>
+
+<span class="p">(</span><span class="nf">exchange</span> <span class="nv">peter-acc</span> <span class="nv">mary-acc</span><span class="p">)</span>
+
+<span class="p">(</span><span class="k">let </span><span class="p">((</span><span class="nf">difference</span> <span class="p">(</span><span class="nb">- </span><span class="p">(</span><span class="nf">peter-acc</span> <span class="ss">&#39;balance</span><span class="p">)</span>
+                     <span class="p">(</span><span class="nf">mary-acc</span> <span class="ss">&#39;balance</span><span class="p">))))</span>
+    <span class="p">((</span><span class="nf">peter-acc</span> <span class="ss">&#39;withdraw</span><span class="p">)</span> <span class="nv">difference</span><span class="p">)</span>
+    <span class="p">((</span><span class="nf">mary-acc</span> <span class="ss">&#39;deposit</span><span class="p">)</span> <span class="nv">difference</span><span class="p">))</span>
+
+<span class="p">((</span><span class="nf">peter-acc</span> <span class="ss">&#39;withdraw</span><span class="p">)</span> <span class="nv">difference</span><span class="p">)</span>
+
+<span class="p">((</span><span class="nf">balance-serializer</span> <span class="nv">withdraw</span><span class="p">)</span> <span class="nv">difference</span><span class="p">)</span>      <span class="c1">; 噢， peter-acc 试图再次使用 balance-serializer 进行串行化</span>
+</pre></div>
+</div>
+<p>注意，在代码的最后一步， <tt class="docutils literal"><span class="pre">peter-acc</span></tt> 试图再次使用 <tt class="docutils literal"><span class="pre">balance-serializer</span></tt> 对 <tt class="docutils literal"><span class="pre">withdraw</span></tt> 操作进行串行化，但是在调用 <tt class="docutils literal"><span class="pre">exchange</span></tt> 的时候， <tt class="docutils literal"><span class="pre">balance-serializer</span></tt> 已经被调用过了，如果 <tt class="docutils literal"><span class="pre">withdraw</span></tt> 操作也使用 <tt class="docutils literal"><span class="pre">balance-serializer</span></tt> 进行串行化，那么它们就处在同一个串行化组中，这时运行 <tt class="docutils literal"><span class="pre">withdraw</span></tt> 和 <tt class="docutils literal"><span class="pre">exchange</span></tt> 的两个过程都会被阻塞，产生死锁。</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p>从理论上看，前面给出的推论应该是正确的，但是如果将练习给出的过程实际运行一遍，就会发现 <tt class="docutils literal"><span class="pre">(serialized-exchange</span> <span class="pre">peter-acc</span> <span class="pre">mary-acc)</span></tt> 可以正常执行，并不会产生死锁：</p>
+<div class="highlight-scheme"><div class="highlight"><pre><span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nb">load </span><span class="s">&quot;45-make-account-and-serializer.scm&quot;</span><span class="p">)</span>
+
+<span class="c1">;Loading &quot;45-make-account-and-serializer.scm&quot;...</span>
+<span class="c1">;  Loading &quot;parallel.scm&quot;... done</span>
+<span class="c1">;  Loading &quot;p215-serialized-exchange.scm&quot;...</span>
+<span class="c1">;    Loading &quot;p214-exchange.scm&quot;... done</span>
+<span class="c1">;  ... done</span>
+<span class="c1">;... done</span>
+<span class="c1">;Value: withdraw</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">peter-acc</span> <span class="p">(</span><span class="nf">make-account-and-serializer</span> <span class="mi">100</span><span class="p">))</span>
+
+<span class="c1">;Value: peter-acc</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">withdraw</span> <span class="nv">peter-acc</span> <span class="mi">50</span><span class="p">)</span>
+
+<span class="c1">;Value: 50</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">deposit</span> <span class="nv">peter-acc</span> <span class="mi">50</span><span class="p">)</span>
+
+<span class="c1">;Value: 100</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="k">define </span><span class="nv">mary-acc</span> <span class="p">(</span><span class="nf">make-account-and-serializer</span> <span class="mi">40</span><span class="p">))</span>
+
+<span class="c1">;Value: mary-acc</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">serialized-exchange</span> <span class="nv">peter-acc</span> <span class="nv">mary-acc</span><span class="p">)</span>      <span class="c1">; 不会产生死锁</span>
+
+<span class="c1">;Value: 100</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">withdraw</span> <span class="nv">peter-acc</span> <span class="mi">0</span><span class="p">)</span>                        <span class="c1">; 而且交换的值也没错</span>
+
+<span class="c1">;Value: 40</span>
+
+<span class="mi">1</span> <span class="p">]</span><span class="k">=&gt; </span><span class="p">(</span><span class="nf">withdraw</span> <span class="nv">mary-acc</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1">;Value: 100</span>
+</pre></div>
+</div>
+<p class="last">对 <a class="reference internal" href="42.html"><em>练习 3.42</em></a> 的代码进行测试也有发现类似的问题，可能是我的推论错了，也可能是跟 mit scheme 的并行实现和串行化实现有关，总而言之，这个问题还需要进一步的研究。</p>
+</div>
+</div>
+
+
+
+            <div class="section" id="discuss">
+    <h2>
+        讨论
+        <a class="headerlink" href="#discuss" title="永久链接至标题">¶</a>
+    </h2>
+    <div id="disqus_thread"></div>
+        <script type="text/javascript">
+            /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+            var disqus_shortname = 'sicp'; // required: replace example with your forum shortname
+
+            /* * * DON'T EDIT BELOW THIS LINE * * */
+            (function() {
+                var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                    dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+            })();
+        </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">blog comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="../index.html">SICP 解题集</a> &raquo;</li> 
+      </ul>
+    </div>
+
+    <div class="footer">
+        &copy; Copyright 2012, huangz1990.
+      Last updated on Jun 25, 2013.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+ <!-- End original user content -->
+
+
+<br>
+<br>
+<br>
+
+
+<style type="text/css">
+  .rtd-badge {
+    position: fixed;
+    display: block;
+    bottom: 5px;
+    height: 40px;
+    text-indent: -9999em;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -moz-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+    -webkit-box-shadow: 0 1px 0 rgba(0, 0, 0, 0.2), 0 1px 0 rgba(255, 255, 255, 0.2) inset;
+  }
+  #version_menu {
+    position: fixed;
+    display: none;
+    bottom: 11px;
+    right: 166px;
+    list-style-type: none;
+    margin: 0;
+  }
+  .footer_popout:hover #version_menu {
+    display: block;
+  }
+  #version_menu li {
+    display: block;
+    float: right;
+  }
+  #version_menu li a {
+    display: block;
+    padding: 6px 10px 4px 10px;
+    margin: 7px 7px 0 0;
+    font-weight: bold;
+    font-size: 14px;
+    height: 20px;
+    line-height: 17px;
+    text-decoration: none;
+    color: #fff;
+    background: #8ca1af url(../images/gradient-light.png) bottom left repeat-x;
+    border-radius: 3px;
+    -moz-border-radius: 3px;
+    -webkit-border-radius: 3px;
+    box-shadow: 0 1px 1px #465158;
+    -moz-box-shadow: 0 1px 1px #465158;
+    -webkit-box-shadow: 0 1px 1px #465158;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  }
+  #version_menu li a:hover {
+    text-decoration: none;
+    background-color: #697983;
+    box-shadow: 0 1px 0px #465158;
+    -moz-box-shadow: 0 1px 0px #465158;
+    -webkit-box-shadow: 0 1px 0px #465158;
+  }
+  .rtd-badge.rtd {
+    background: #3b4449 url(//media.readthedocs.org//images/badge-rtd.png) scroll 0px -46px no-repeat;
+    border: 1px solid #282E32;
+    width: 41px;
+    right: 5px;
+  }
+  .footer_popout:hover .rtd-badge.rtd {
+    background-position: top left;
+    width: 160px;
+  }
+  .rtd-badge.revsys { background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline-sponsored {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 290px;
+    right: 173px;
+  }
+  .rtd-badge.revsys-inline {
+    position: inherit;
+    margin-left: auto;
+    margin-right: 175px;
+    margin-bottom: 5px;
+    background: #465158 url(//media.readthedocs.org//images/badge-revsys-sm.png) top left no-repeat;
+    border: 1px solid #1C5871;
+    width: 205px;
+    right: 173px;
+  }
+
+</style>
+<div class="rtd_doc_footer">
+  <div class="footer_popout">
+    <a href="//readthedocs.org/projects/sicp/?fromdocs=sicp" class="rtd-badge rtd"> Brought to you by Read the Docs</a>
+    <ul id="version_menu">
+      
+        <li><a href="/en/latest/">latest</a></li>
+      
+    </ul>
+  </div>
+</div>
+<!-- RTD Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-17997319-1']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+<!-- User Analytics Code -->
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-31527501-2']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+
+
+
+  </body>
+</html>
