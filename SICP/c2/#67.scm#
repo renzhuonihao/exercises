@@ -1,2 +1,0 @@
-(define sample-tree
-  (make-code-tree
