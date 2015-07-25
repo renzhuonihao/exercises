@@ -16,7 +16,7 @@
 		   (lambda ()
 		     (set-signal! output new-value)))))
   (add-action! input invert-input)
-  'ok)
+  'connect-invert-ok)
 
 ;与门
 (define (logical-and s1 s2)
@@ -31,7 +31,7 @@
 		     (set-signal! output new-value)))))
   (add-action! a1 add-action-procedure)
   (add-action! a2 add-action-procedure)
-  'ok)
+  'connect-and-ok)
 
 ;或门
 (define (logical-or s1 s2)
@@ -46,4 +46,4 @@
 		     (set-signal! output new-value)))))
   (add-action! a1 or-action-procedure)
   (add-action! a2 or-action-procedure)
-  'ok)
+  'connect-or-ok)

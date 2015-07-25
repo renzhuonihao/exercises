@@ -4,7 +4,7 @@
       (if (not (= signal-value new-value))
 	  (begin (set! signal-value new-value)
 		 (call-each action-procedures))
-	  'done))
+	  'set-value-done))
     (define (accept-action-procedure! proc)
       (set! action-procedures (cons proc action-procedures))
       (proc))

@@ -1,7 +1,7 @@
 (load "basic-adders.scm")
 (define (propagate)
   (if (empty-agenda? the-agenda)
-      'done
+      'propagete-done
       (let ((first-item (first-agenda-item the-agenda)))
 	(first-item)
 	(remove-first-agenda-item! the-agenda)

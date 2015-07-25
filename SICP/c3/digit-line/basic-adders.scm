@@ -1,10 +1,10 @@
 (load "basic-gates.scm")
 (define (half-adder a b s c)
   (let ((d (make-wire)) (e (make-wire)))
-    (or-gate a b d)
-    (and-gate a b c)
-    (inverter c e)
     (and-gate d e s)
+    (inverter c e)
+    (and-gate a b c)
+    (or-gate a b d)
     'ok))
 (define (full-adder a b c-in sum c-out)
   (let ((s (make-wire))
@@ -14,3 +14,5 @@
     (half-adder a s sum c2)
     (or-gate c1 c2 c-out)
     'ok))
+
+;这里将half-adder内的顺序调换，此处不影响结果。

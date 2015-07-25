@@ -1,0 +1,11 @@
+关于这个电路模拟程序的解析
+（1）是关于lambda
+(define test (cons + (lambda (+ 1 2))))
+
+(cdr test),得到的结果是一个过程。
+((cdr test))得到的是数字3.
+(2)wire 内的accept-action-procedure! 函数，在加入一个过程后会直接运行，该函数应该是
+起的初始化的作用，可以通过在解释器中
+ > the-agenda 
+看到 the-agenda的时间点和内容
+(3) 感觉不是很明白，有机会再看吧
